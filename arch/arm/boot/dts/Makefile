@@ -495,6 +495,7 @@ dtb-$(CONFIG_MACH_ARMADA_370) += \
 	armada-370-mirabox.dtb \
 	armada-370-netgear-rn102.dtb \
 	armada-370-netgear-rn104.dtb \
+	armada-370-dlink-dns327l.dtb \
 	armada-370-rd.dtb
 dtb-$(CONFIG_MACH_ARMADA_375) += \
 	armada-375-db.dtb
