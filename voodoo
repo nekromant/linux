@@ -1,0 +1,6 @@
+rm -f arch/arm/boot/zImage
+ARCH=arm make menuconfig zImage dtbs -j8
+cat arch/arm/boot/dts/armada-370-dlink-dns327l.dtb >> arch/arm/boot/zImage
+ARCH=arm LOADADDR=0x00008000 make uImage
+cp arch/arm/boot/uImage /srv/tftp/uImage-altmera 
+
