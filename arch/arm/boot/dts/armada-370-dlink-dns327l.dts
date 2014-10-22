@@ -1,0 +1,285 @@
+/*
+ * Device Tree file for DLINK DNS-327L
+ *
+ * Copyright (C) 2014, Andrew 'Necromant' Andrianov <andrew@ncrmnt.org>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version
+ * 2 of the License, or (at your option) any later version.
+ */
+
+ /* A small TODO list: 
+  * * There's still something unknown on i2c address 0x13
+  * * 
+  */
+
+/dts-v1/;
+
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-370.dtsi"
+
+/ {
+	model = "DLINK DNS-327L";
+	compatible = "dlink,dns327l", "marvell,armada370", "marvell,armada-370-xp";
+
+	chosen {
+		bootargs = "console=ttyS0,115200 earlyprintk";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x20000000>; /* 512 MB */
+	};
+
+	soc {
+		ranges = <MBUS_ID(0xf0, 0x01) 0 0xd0000000 0x100000
+			  MBUS_ID(0x01, 0xe0) 0 0xfff00000 0x100000>;
+
+		pcie-controller {
+			status = "okay";
+
+			/* Connected to Marvell SATA controller */
+			pcie@1,0 {
+				/* Port 0, Lane 0 */
+				status = "okay";
+			};
+
+			/* Connected to NEC USB 3.0 controller */
+			pcie@2,0 {
+				/* Port 1, Lane 0 */
+				status = "okay";
+			};
+		};
+
+		internal-regs {
+			serial@12000 {
+				status = "okay";
+			};
+
+			serial@12100 {
+				status = "okay";
+			};
+
+			sata@a0000 {
+				nr-ports = <2>;
+				status = "okay";
+			};
+
+			pinctrl {
+				sata1_white_pin: sata1-white-pin {
+					marvell,pins = "mpp55";
+					marvell,function = "sata1";
+				};
+
+				sata1_amber_pin: sata1-amber-pin {
+					marvell,pins = "mpp52";
+					marvell,function = "gpio";
+				};
+
+				sata2_white_pin: sata2-white-pin {
+					marvell,pins = "mpp57";
+					marvell,function = "sata0";
+				};
+
+				sata2_amber_pin: sata2-amber-pin {
+					marvell,pins = "mpp53";
+					marvell,function = "gpio";
+				};
+
+				backup_led_pin: backup-led-pin {
+					marvell,pins = "mpp61";
+					marvell,function = "gpo";
+				};
+
+				xhci_pwr_pin: xhci-pwr-pin {
+					marvell,pins = "mpp13";
+					marvell,function = "gpio";
+				};
+
+				sata1_pwr_pin: sata1-pwr-pin {
+					marvell,pins = "mpp54";
+					marvell,function = "gpio";
+				};
+
+				sata2_pwr_pin: sata2-pwr-pin {
+					marvell,pins = "mpp56";
+					marvell,function = "gpio";
+				};
+
+/*
+	Looks like some bug in drivers or something. 
+	can request these pins in userspace and read values, 
+	but gpio-keys fail to request them
+				backup_button_pin: backup-button-pin {
+					marvell,pins = "mpp63";
+					marvell,function = "gpo";
+				};
+
+				reset_button_pin: reset-button-pin {
+					marvell,pins = "mpp64";
+					marvell,function = "gpio";
+				};
+*/
+			};
+
+			mdio {
+				phy0: ethernet-phy@0 { /* Marvell 88E1318 */
+					reg = <0>;
+				};
+			};
+
+			ethernet@74000 {
+				status = "okay";
+				phy = <&phy0>;
+				phy-mode = "rgmii-id";
+			};
+
+			usb@50000 {
+				status = "okay";
+			};
+
+			i2c@11000 {
+				compatible = "marvell,mv64xxx-i2c";
+				clock-frequency = <100000>;
+				status = "okay";
+
+				isl12057: isl12057@68 {
+					compatible = "isl,isl12057";
+					reg = <0x68>;
+				};
+
+				g762: g762@3e {
+					compatible = "gmt,g762";
+					reg = <0x3e>;
+					clocks = <&g762_clk>; /* input clock */
+					fan_gear_mode = <0>;
+					fan_startv = <1>;
+					pwm_polarity = <0>;
+				};
+			};
+
+			nand@d0000 {
+				status = "okay";
+				num-cs = <1>;
+				marvell,nand-keep-config;
+				marvell,nand-enable-arbiter;
+				nand-on-flash-bbt;
+
+				partition@0 {
+					label = "u-boot";
+					reg = <0x0000000 0x180000>;  /* 1.5MB */
+					read-only;
+				};
+
+				partition@180000 {
+					label = "u-boot-env";
+					reg = <0x180000 0x20000>;    /* 128KB */
+					read-only;
+				};
+
+				partition@200000 {
+					label = "uImage";
+					reg = <0x0200000 0x600000>;    /* 6MB */
+				};
+
+				partition@800000 {
+					label = "minirootfs";
+					reg = <0x0800000 0x400000>;    /* 4MB */
+				};
+
+				/* Last MB is for the BBT, i.e. not writable */
+				partition@c00000 {
+					label = "ubifs";
+					reg = <0x0c00000 0x7400000>; /* 116MB */
+				};
+			};
+		};
+	};
+
+	clocks {
+	       g762_clk: g762-oscillator {
+			 compatible = "fixed-clock";
+			 #clock-cells = <0>;
+			 clock-frequency = <8192>;
+	       };
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+		pinctrl-0 = <
+			     &sata1_amber_pin
+			     &sata2_amber_pin
+			     &backup_led_pin
+			     &xhci_pwr_pin>;
+
+		pinctrl-names = "default";
+
+		sata1-amber-pin {
+			label = "dns327l:amber:sata1";
+			gpios = <&gpio1 20 GPIO_ACTIVE_HIGH>;
+			default-state = "keep";
+		};
+
+		sata2-amber-pin {
+			label = "dns327l:amber:sata2";
+			gpios = <&gpio1 21 GPIO_ACTIVE_HIGH>;
+			default-state = "keep";
+		};
+
+		backup-led-pin {
+			label = "dns327l:white:usb";
+			gpios = <&gpio1 29 GPIO_ACTIVE_HIGH>;
+			default-state = "keep";
+		};
+
+	};
+
+        regulators {
+                compatible = "simple-bus";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                pinctrl-0 = <&xhci_pwr_pin
+			     &sata1_pwr_pin
+			     &sata2_pwr_pin>;
+
+                pinctrl-names = "default";
+
+                usb_power: regulator@1 {
+                        compatible = "regulator-fixed";
+                        reg = <1>;
+                        regulator-name = "USB3.0 Port Power";
+                        regulator-min-microvolt = <5000000>;
+                        regulator-max-microvolt = <5000000>;
+                        enable-active-high;
+                        regulator-boot-on;
+			regulator-always-on;
+                        gpio = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+                };
+
+                sata1_power: regulator@2 {
+                        compatible = "regulator-fixed";
+                        reg = <1>;
+                        regulator-name = "SATA-1 Power";
+                        regulator-min-microvolt = <5000000>;
+                        regulator-max-microvolt = <5000000>;
+                        enable-active-high;
+			regulator-always-on;
+                        gpio = <&gpio1 22 GPIO_ACTIVE_HIGH>;
+                };
+
+                sata2_power: regulator@3 {
+                        compatible = "regulator-fixed";
+                        reg = <1>;
+                        regulator-name = "SATA-2 Power";
+                        regulator-min-microvolt = <5000000>;
+                        regulator-max-microvolt = <5000000>;
+                        enable-active-high;
+			regulator-always-on;
+                        gpio = <&gpio1 24 GPIO_ACTIVE_HIGH>;
+                };		
+        };
+
+
+};
