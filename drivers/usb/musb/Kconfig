@@ -60,6 +60,11 @@ endchoice
 
 comment "Platform Glue Layer"
 
+config USB_MUSB_SUNXI
+	tristate "Allwinner (sunxi)"
+	depends on ARCH_SUNXI
+	select GENERIC_PHY
+
 config USB_MUSB_DAVINCI
 	tristate "DaVinci"
 	depends on ARCH_DAVINCI_DMx
