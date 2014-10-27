@@ -1,6 +1,18 @@
+uimage() {
+    cp zImage-precious arch/arm/boot/zImage
+    cat arch/arm/boot/dts/${1}.dtb >> arch/arm/boot/zImage
+    ARCH=arm LOADADDR=${2} make uImage
+    cp arch/arm/boot/uImage ./uImage-${3}
+    cp arch/arm/boot/uImage /srv/tftp/uImage-${3}
+}
+
+
 rm -f arch/arm/boot/zImage
 ARCH=arm make menuconfig zImage dtbs -j8
-cat arch/arm/boot/dts/armada-370-dlink-dns327l.dtb >> arch/arm/boot/zImage
-ARCH=arm LOADADDR=0x00008000 make uImage
-cp arch/arm/boot/uImage /srv/tftp/uImage-altmera 
+cp arch/arm/boot/zImage ./zImage-precious
+uimage armada-370-dlink-dns327l 0x00008000 altmera
+
+#cat arch/arm/boot/dts/armada-370-dlink-dns327l.dtb >> arch/arm/boot/zImage
+#ARCH=arm LOADADDR=0x00008000 make uImage
+#cp arch/arm/boot/uImage /srv/tftp/uImage-altmera 
 
