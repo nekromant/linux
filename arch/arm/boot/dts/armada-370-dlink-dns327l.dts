@@ -108,20 +108,20 @@
 					marvell,function = "gpio";
 				};
 
-/*
-	Looks like some bug in drivers or something. 
-	can request these pins in userspace and read values, 
-	but gpio-keys fail to request them
+				power_button_pin: power-button-pin {
+					marvell,pins = "mpp65";
+					marvell,function = "gpio";
+				};
+
 				backup_button_pin: backup-button-pin {
 					marvell,pins = "mpp63";
-					marvell,function = "gpo";
+					marvell,function = "gpio";
 				};
 
 				reset_button_pin: reset-button-pin {
 					marvell,pins = "mpp64";
 					marvell,function = "gpio";
 				};
-*/
 			};
 
 			mdio {
@@ -204,6 +204,35 @@
 			 #clock-cells = <0>;
 			 clock-frequency = <8192>;
 	       };
+	};
+
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-0 = < 
+			      &backup_button_pin 
+			      &power_button_pin>;
+		pinctrl-names = "default";
+			      
+		power-button {
+			label = "Power Button";
+			linux,code = <KEY_POWER>;
+			gpios = <&gpio2 1 GPIO_ACTIVE_LOW>;
+		};
+
+		backup-button {
+			label = "Backup Button";
+			linux,code = <KEY_COPY>;
+			gpios = <&gpio1 31 GPIO_ACTIVE_LOW>;
+		};
+
+		reset-button {
+			label = "Reset Button";
+			linux,code = <KEY_RESTART>;
+			gpios = <&gpio2 0 GPIO_ACTIVE_LOW>;
+		};
+
+		
 	};
 
 	gpio-leds {
