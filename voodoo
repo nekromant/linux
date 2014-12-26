@@ -11,8 +11,8 @@ rm -f arch/arm/boot/zImage
 ARCH=arm make menuconfig zImage dtbs -j8
 cp arch/arm/boot/zImage ./zImage-precious
 uimage armada-370-dlink-dns327l 0x00008000 altmera
+uimage sun4i-a10-cubieboard 0x40008000 cubie
+uimage sun4i-a10-cs102ii 0x40008000 cs102ii
 
-#cat arch/arm/boot/dts/armada-370-dlink-dns327l.dtb >> arch/arm/boot/zImage
-#ARCH=arm LOADADDR=0x00008000 make uImage
-#cp arch/arm/boot/uImage /srv/tftp/uImage-altmera 
+
 
