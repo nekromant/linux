@@ -1,18 +1,35 @@
+#!/bin/bash
+
+set -e
+M=menuconfig
+#M=
+
 uimage() {
-    cp zImage-precious arch/arm/boot/zImage
-    cat arch/arm/boot/dts/${1}.dtb >> arch/arm/boot/zImage
+    cp ${KBUILD_OUTPUT}/zImage-precious ${KBUILD_OUTPUT}/arch/arm/boot/zImage
+    cat ${KBUILD_OUTPUT}/arch/arm/boot/dts/${1}.dtb >> ${KBUILD_OUTPUT}/arch/arm/boot/zImage
     ARCH=arm LOADADDR=${2} make uImage
-    cp arch/arm/boot/uImage ./uImage-${3}
-    cp arch/arm/boot/uImage /srv/tftp/uImage-${3}
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage ./uImage-${3}
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage /srv/tftp/uImage-${3}
 }
 
 
-rm -f arch/arm/boot/zImage
-ARCH=arm make menuconfig zImage dtbs -j8
-cp arch/arm/boot/zImage ./zImage-precious
+build()
+{
+    mkdir -p build/$1
+    [ -f build/$1/.config ] || cp $2 build/$1/.config
+    export KBUILD_OUTPUT=build/$1
+    [ -f ${KBUILD_OUTPUT}/arch/arm/boot/zImage ] && touch ${KBUILD_OUTPUT}/arch/arm/boot/zImage
+    ARCH=arm make $M zImage dtbs -j8
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/zImage ${KBUILD_OUTPUT}/zImage-precious
+}
+
+
+altmera() {
+build altmera dn327l_and_sunxi_config
 uimage armada-370-dlink-dns327l 0x00008000 altmera
 uimage sun4i-a10-cubieboard 0x40008000 cubie
 uimage sun4i-a10-cs102ii 0x40008000 cs102ii
+}
 
-
-
+build blade config_odroid 
+uimage exynos4412-odroidx2 0x40008000 blade 
