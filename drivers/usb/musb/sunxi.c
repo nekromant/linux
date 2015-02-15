@@ -430,14 +430,13 @@ u32 sunxi_fifo_offset(u8 epnum)
 }
 
 static const struct musb_platform_ops sunxi_ops = {
-	.quirks		= MUSB_INDEXED_EP,
 	.init		= sunxi_musb_init,
 	.exit		= sunxi_musb_exit,
 
 	.enable		= sunxi_musb_enable,
 	.disable	= sunxi_musb_disable,
 
-	.fifo_offset	= sunxi_fifo_offset,
+//	.fifo_offset	= sunxi_fifo_offset,
 
 	.set_mode	= sunxi_musb_set_mode,
 };
