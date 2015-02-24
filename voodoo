@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-M=menuconfig
+#M=menuconfig
 #M=
 
 uimage() {
@@ -9,6 +9,13 @@ uimage() {
     cat ${KBUILD_OUTPUT}/arch/arm/boot/dts/${1}.dtb >> ${KBUILD_OUTPUT}/arch/arm/boot/zImage
     ARCH=arm LOADADDR=${2} make uImage
     cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage ./uImage-${3}
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage /srv/tftp/uImage-${3}
+}
+
+zimage() {
+    cp ${KBUILD_OUTPUT}/zImage-precious ${KBUILD_OUTPUT}/arch/arm/boot/zImage
+    cat ${KBUILD_OUTPUT}/arch/arm/boot/dts/${1}.dtb >> ${KBUILD_OUTPUT}/arch/arm/boot/zImage
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/zImage ./zImage-${3}
     cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage /srv/tftp/uImage-${3}
 }
 
@@ -31,5 +38,10 @@ uimage sun4i-a10-cubieboard 0x40008000 cubie
 uimage sun4i-a10-cs102ii 0x40008000 cs102ii
 }
 
+blade() {
 build blade config_odroid 
-uimage exynos4412-odroidx2 0x40008000 blade 
+zimage exynos4412-odroidx2 0x40008000 blade 
+}
+
+altmera
+blade
