@@ -12,6 +12,13 @@ uimage() {
     cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage /srv/tftp/uImage-${3}
 }
 
+zimage() {
+    cp ${KBUILD_OUTPUT}/zImage-precious ${KBUILD_OUTPUT}/arch/arm/boot/zImage
+    cat ${KBUILD_OUTPUT}/arch/arm/boot/dts/${1}.dtb >> ${KBUILD_OUTPUT}/arch/arm/boot/zImage
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/zImage ./zImage-${3}
+    cp ${KBUILD_OUTPUT}/arch/arm/boot/uImage /srv/tftp/uImage-${3}
+}
+
 
 build()
 {
@@ -31,5 +38,10 @@ uimage sun4i-a10-cubieboard 0x40008000 cubie
 uimage sun4i-a10-cs102ii 0x40008000 cs102ii
 }
 
-build blade config_odroid 
-uimage exynos4412-odroidx2 0x40008000 blade 
+blade() {
+build blade config_odroid
+zimage exynos4412-odroidx2 0x40008000 blade
+}
+
+altmera
+blade
